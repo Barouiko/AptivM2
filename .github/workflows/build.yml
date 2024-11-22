@@ -24,32 +24,36 @@ jobs:
 
       - name: Install Android SDK
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
+          # إعداد دليل SDK
+          mkdir -p $HOME/android-sdk
           export ANDROID_SDK_ROOT=$HOME/android-sdk
-
+          
+          # تنزيل أدوات سطر الأوامر
           curl -sSL https://dl.google.com/android/repository/commandlinetools-linux-7583922_latest.zip -o commandlinetools.zip
-          unzip commandlinetools.zip -d $HOME/android-sdk/cmdline-tools-temp
+          unzip commandlinetools.zip -d $HOME/android-sdk
+          
+          # إنشاء المجلد latest إذا لم يكن موجوداً
           mkdir -p $HOME/android-sdk/cmdline-tools/latest
-          mv $HOME/android-sdk/cmdline-tools-temp/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
-          rm -rf $HOME/android-sdk/cmdline-tools-temp
-          rm -f commandlinetools.zip
-
+          
+          # نقل الأدوات إلى المجلد latest بشكل صحيح
+          mv $HOME/android-sdk/cmdline-tools/* $HOME/android-sdk/cmdline-tools/latest/
+          
+          # حذف المجلد القديم cmdline-tools إذا لزم الأمر
+          rm -rf $HOME/android-sdk/cmdline-tools
+          
+          # إعداد المتغيرات البيئية
           echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
           echo "ANDROID_SDK_ROOT=$HOME/android-sdk" >> $GITHUB_ENV
           echo "$HOME/android-sdk/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$HOME/android-sdk/platform-tools" >> $GITHUB_PATH
 
       - name: Accept Android SDK licenses
-        run: yes | sdkmanager --licenses
+        run: |
+          yes | sdkmanager --licenses
 
       - name: Install Android Build Tools and Platform
-        run: sdkmanager "build-tools;30.0.3" "platforms;android-30"
-
-      - name: List files in the working directory
-        run: ls -l
-
-      - name: Fix Gradlew permissions
-        run: chmod +x ./gradlew
+        run: |
+          sdkmanager "build-tools;30.0.3" "platforms;android-30"
 
       - name: Build with Gradle
         run: ./gradlew build
